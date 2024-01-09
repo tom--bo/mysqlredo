@@ -96,7 +96,7 @@ MYSQL_ADD_EXECUTABLE(mysqlshow
 include(${CMAKE_SOURCE_DIR}/storage/innobase/innodb.cmake)
 
 MYSQL_ADD_EXECUTABLE(mysqlredo
-        mysqlredo.cc
+  mysqlredo.cc
   innodb_log.cpp
   mylog0recv.cpp
   mylog0log.cc

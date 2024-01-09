@@ -1,3 +1,14 @@
+# mysqlredo
+
+This is a prototype of `mysqlredo` command.  
+`mysqlredo` parse innodb redo log and dump redo log records.
+
+Currently, this tool modify and utilize innodb original recv_scan_log_recs() methods.
+
+There is no documents to use this tool. I'll add them soon.
+
+(Should be updated below)
+
 Copyright (c) 2000, 2023, Oracle and/or its affiliates.
 
 This is a release of MySQL, an SQL database server.
