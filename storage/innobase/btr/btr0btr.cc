@@ -1400,6 +1400,8 @@ byte *btr_parse_page_reorganize(
     level = page_zip_level;
   }
 
+  std::cout << ", level: " << (uint)level;
+
   if (block != nullptr) {
     btr_page_reorganize_block(true, level, block, index, mtr);
   }
@@ -2743,6 +2745,8 @@ byte *btr_parse_set_min_rec_mark(
     ut_a(!page_is_comp(page) == !comp);
 
     rec = page + mach_read_from_2(ptr);
+
+    std::cout << ", offset: " << uint(mach_read_from_2(ptr));
 
     btr_set_min_rec_mark(rec, mtr);
   }

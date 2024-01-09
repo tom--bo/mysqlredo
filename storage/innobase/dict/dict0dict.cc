@@ -5581,6 +5581,7 @@ ulint CorruptedIndexPersister::read(PersistentTableMetadata &metadata,
   }
 
   type = *buffer++;
+  std::cout << ", persister_type: " << uint(type);
   ++consumed;
 
   if (type != PM_INDEX_CORRUPTED) {
@@ -5589,6 +5590,7 @@ ulint CorruptedIndexPersister::read(PersistentTableMetadata &metadata,
   }
 
   num = mach_read_from_1(buffer);
+  std::cout << ", num: " << num;
   ++consumed;
   ++buffer;
 
@@ -5604,6 +5606,7 @@ ulint CorruptedIndexPersister::read(PersistentTableMetadata &metadata,
   for (ulint i = 0; i < num; ++i) {
     space_id_t space_id = mach_read_from_4(buffer);
     space_index_t index_id = mach_read_from_8(buffer + 4);
+    std::cout << ", [" << i << "](space_id: " << uint(space_id) << ", index_id: " << uint(index_id) << ")";
     metadata.add_corrupted_index(index_id_t(space_id, index_id));
 
     buffer += INDEX_ID_LENGTH;
@@ -5663,6 +5666,7 @@ ulint AutoIncPersister::read(PersistentTableMetadata &metadata,
   }
 
   type = *buffer++;
+  std::cout << ", persister_type: " << uint(type);
   ++consumed;
 
   if (type != PM_TABLE_AUTO_INC) {
@@ -5672,6 +5676,7 @@ ulint AutoIncPersister::read(PersistentTableMetadata &metadata,
 
   const byte *start = buffer;
   autoinc = mach_parse_u64_much_compressed(&start, end);
+    std::cout << ", autoinc: " << uint(autoinc);
 
   if (start == nullptr) {
     /* Just incomplete data, not corrupted */

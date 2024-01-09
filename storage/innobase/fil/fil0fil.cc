@@ -10172,6 +10172,8 @@ byte *fil_tablespace_redo_create(byte *ptr, const byte *end,
 
     return nullptr;
   }
+  std::cout << ", len: " << len << ", filename: " << name;
+
 
   if (parse_only) {
     return ptr;
@@ -10297,6 +10299,11 @@ byte *fil_tablespace_redo_rename(byte *ptr, const byte *end,
   ptr += to_len;
   Fil_path::normalize(to_name);
 
+  std::string fname(from_name, from_len-1);
+  std::string tname(to_name, to_len-1);
+  std::cout << ", from_len: " << (uint)from_len << ", from_name: " << fname
+    << ", to_len: " << (uint)to_len << ", to_name: " << tname;
+
 #ifdef UNIV_HOTBACKUP
 
   if (!parse_only) {
@@ -10348,6 +10355,8 @@ byte *fil_tablespace_redo_extend(byte *ptr, const byte *end,
   writing zeros */
   os_offset_t size = mach_read_from_8(ptr);
   ptr += 8;
+
+  std::cout << ", offset: " << uint(offset) << ", size: " << size;
 
   if (size == 0) {
     ib::error(ER_IB_MSG_INCORRECT_SIZE)
@@ -10539,6 +10548,9 @@ byte *fil_tablespace_redo_delete(byte *ptr, const byte *end,
 
     return nullptr;
   }
+
+  std::string fname(fname, len);
+  std::cout << ", len: " << (uint)len << ", file_name: " << fname;
 
   if (parse_only) {
     return ptr;

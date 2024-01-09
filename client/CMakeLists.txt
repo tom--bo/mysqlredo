@@ -93,6 +93,20 @@ MYSQL_ADD_EXECUTABLE(mysqlshow
   LINK_LIBRARIES mysqlclient
   )
 
+include(${CMAKE_SOURCE_DIR}/storage/innobase/innodb.cmake)
+
+MYSQL_ADD_EXECUTABLE(mysqlredo
+        mysqlredo.cc
+  innodb_log.cpp
+  mylog0recv.cpp
+  mylog0log.cc
+  mymtr0log.cpp
+  INCLUDE_DIRECTORIES ../storage/innobase/include ../storage/innobase
+  LINK_LIBRARIES innobase minchassis # mysqlservices sql_main sql_dd mysys
+)
+ADD_DEPENDENCIES(mysqlredo minchassis)
+ADD_DEPENDENCIES(mysqlredo innobase minchassis)
+
 OPTION(WITH_JSON_BINLOG_LIBRARY
   "Build and install standalone json_binlog library" OFF)
 

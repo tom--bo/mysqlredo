@@ -848,6 +848,7 @@ byte *page_parse_delete_rec_list(
 
   offset = mach_read_from_2(ptr);
   ptr += 2;
+  std::cout << ", offset: " << uint(offset);
 
   if (!block) {
     return (ptr);

@@ -113,6 +113,7 @@ byte *trx_undo_parse_add_undo_rec(byte *ptr,     /*!< in: buffer */
 
   len = mach_read_from_2(ptr);
   ptr += 2;
+  std::cout << ", len: " << len;
 
   if (end_ptr < ptr + len) {
     return (nullptr);
@@ -123,6 +124,7 @@ byte *trx_undo_parse_add_undo_rec(byte *ptr,     /*!< in: buffer */
   }
 
   first_free = mach_read_from_2(page + TRX_UNDO_PAGE_HDR + TRX_UNDO_PAGE_FREE);
+  std::cout << ", first_free: " << first_free;
   rec = page + first_free;
 
   mach_write_to_2(rec, first_free + 4 + len);

@@ -1085,6 +1085,7 @@ byte *page_cur_parse_insert_rec(
 
     offset = mach_read_from_2(ptr);
     ptr += 2;
+    std::cout << ", offset: " << uint(offset);
 
     if (page != nullptr) cursor_rec = page + offset;
 
@@ -1096,6 +1097,7 @@ byte *page_cur_parse_insert_rec(
   }
 
   end_seg_len = mach_parse_compressed(&ptr, end_ptr);
+  std::cout << ", end_seg_len: " << end_seg_len;
 
   if (ptr == nullptr) {
     return (nullptr);
@@ -1119,6 +1121,7 @@ byte *page_cur_parse_insert_rec(
 
     origin_offset = mach_parse_compressed(&ptr, end_ptr);
 
+    std::cout << ", info_and_status_bits: " << info_and_status_bits << ", origin_offset" << origin_offset;
     if (ptr == nullptr) {
       return (nullptr);
     }
@@ -1126,6 +1129,7 @@ byte *page_cur_parse_insert_rec(
     ut_a(origin_offset < UNIV_PAGE_SIZE);
 
     mismatch_index = mach_parse_compressed(&ptr, end_ptr);
+    std::cout << ", mismatch_index: " << mismatch_index;
 
     if (ptr == nullptr) {
       return (nullptr);
@@ -2029,6 +2033,7 @@ byte *page_parse_copy_rec_list_to_created_page(
   if (rec_end > end_ptr) {
     return (nullptr);
   }
+  std::cout << ", log_data_len: " << (uint)log_data_len;
 
   if (!block) {
     return (rec_end);
@@ -2269,6 +2274,7 @@ byte *page_cur_parse_delete_rec(
   /* Read the cursor rec offset as a 2-byte ulint */
   offset = mach_read_from_2(ptr);
   ptr += 2;
+  std::cout << ", rec_offset: " << offset;
 
   ut_a(offset <= UNIV_PAGE_SIZE);
 

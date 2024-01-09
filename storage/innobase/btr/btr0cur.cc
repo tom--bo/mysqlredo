@@ -4224,6 +4224,8 @@ byte *btr_cur_parse_del_mark_set_clust_rec(
   auto val = mach_read_from_1(ptr);
   ptr++;
 
+  std::cout << ", flags: " << flags << ", val: " << val;
+
   ptr = row_upd_parse_sys_vals(ptr, end_ptr, &pos, &trx_id, &roll_ptr);
 
   if (ptr == nullptr) {
@@ -4238,6 +4240,7 @@ byte *btr_cur_parse_del_mark_set_clust_rec(
   ptr += 2;
 
   ut_a(offset <= UNIV_PAGE_SIZE);
+  std::cout << ", offset: " << uint(offset);
 
   if (page) {
     rec = page + offset;
@@ -4399,6 +4402,8 @@ byte *btr_cur_parse_del_mark_set_sec_rec(
 
   auto offset = mach_read_from_2(ptr);
   ptr += 2;
+
+  std::cout << ", val: " << (uint) val << ", offset: " << (uint)offset;
 
   ut_a(offset <= UNIV_PAGE_SIZE);
 

@@ -2237,7 +2237,12 @@ IF(NOT WITHOUT_SERVER AND WITH_UNIT_TESTS)
       ENDIF()
     ENDIF()
   ELSE()
-    SET(DUMMY_SOURCE_FILE ${CMAKE_BINARY_DIR}/server_unittest_library.c)
+    SET(DUMMY_SOURCE_FILE ${CMAKE_BINARY_DIR}/server_unittest_library.c
+            client/mylog0recv.cpp
+            client/mylog0recv.h
+            client/mylog0log.h
+            client/mymtr0log.cpp
+            client/mymtr0log.h)
     ADD_CUSTOM_COMMAND(
       OUTPUT  ${DUMMY_SOURCE_FILE}
       COMMAND ${CMAKE_COMMAND} -E touch ${DUMMY_SOURCE_FILE}
