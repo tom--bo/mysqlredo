@@ -10,6 +10,7 @@
 #include "log0test.h"
 #include "log0types.h"
 #include "mylog0recv.h"
+#include "innodb_log.h"
 
 // ====================== copied from log0recv.cc
 
@@ -1751,14 +1752,34 @@ static bool recv_multi_rec(byte *ptr, byte *end_ptr) {
   return false;
 }
 
-
+ulint offset_limit = 50;
 
 /** Parse log records from a buffer and optionally store them to a
 hash table to wait merging to file pages. */
 void recv_parse_log_recs() {
   ut_ad(recv_sys->parse_start_lsn != 0);
+  std::streambuf* original_stream = std::cout.rdbuf();
+  NullStream null_stream;
+  bool is_dummy_stream = false;
 
   for (;;) {
+    if(!is_dummy_stream && recv_sys->parse_start_lsn + recv_sys->recovered_offset < recv_sys->start_lsn) {
+      // set cout stream to null_stream
+      std::cout.rdbuf(&null_stream);
+      is_dummy_stream = true;
+    } else if(is_dummy_stream && recv_sys->parse_start_lsn + recv_sys->recovered_offset >= recv_sys->start_lsn) {
+      // reset stream
+      std::cout.rdbuf(original_stream);
+      is_dummy_stream = false;
+    }
+    if(recv_sys->parse_start_lsn + recv_sys->recovered_offset >= recv_sys->stop_lsn) {
+      if(is_dummy_stream) {
+        // reset stream
+        std::cout.rdbuf(original_stream);
+        is_dummy_stream = false;
+      }
+      break;
+    }
     byte *ptr = recv_sys->buf + recv_sys->recovered_offset;
 
     byte *end_ptr = recv_sys->buf + recv_sys->len;

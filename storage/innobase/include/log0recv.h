@@ -564,6 +564,12 @@ struct recv_sys_t {
   start point not found yet */
   lsn_t parse_start_lsn;
 
+  /* start printing lsn */
+  lsn_t start_lsn;
+
+  /* to end parse */
+  lsn_t stop_lsn;
+
   /** Checkpoint lsn that was used during recovery (read from file). */
   lsn_t checkpoint_lsn;
 
