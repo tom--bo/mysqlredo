@@ -29,24 +29,25 @@
 static char *filepath = nullptr;
 static uint opt_verbose = 0;
 bool opt_header_only = false;
+ulong opt_stop_lsn = 0;
+ulong opt_start_lsn = 0;
 
 static void get_options(int *argc, char ***argv);
 
 static const char *load_default_groups[] = {"mysqlredo", "client", nullptr};
 
 static struct my_option my_long_options[] = {
-        {"help", '?', "Display this help and exit.", nullptr, nullptr, nullptr,
-                                                                                GET_NO_ARG, NO_ARG, 0, 0, 0, nullptr, 0, nullptr},
-        {"header-only", 'h', "Display redo log file's header info only.", nullptr, nullptr, nullptr,
-                GET_NO_ARG, NO_ARG, 0, 0, 0, nullptr, 0, nullptr},
-        {"verbose", 'v',
-                "More verbose output; (you can use this multiple times to get even more verbose output.)",
-                                                     nullptr, nullptr, nullptr, GET_NO_ARG, NO_ARG, 0, 0, 0, nullptr, 0,
-                nullptr},
-        {"version", 'V', "Output version information and exit.", nullptr, nullptr,
-                                                                       nullptr, GET_NO_ARG, NO_ARG, 0, 0, 0, nullptr, 0, nullptr},
-        {nullptr, 0, nullptr, nullptr, nullptr, nullptr, GET_NO_ARG, NO_ARG, 0, 0,
-                0, nullptr, 0, nullptr}};
+        {"help", '?', "Display this help and exit.", nullptr, nullptr, nullptr, GET_NO_ARG, NO_ARG, 0, 0, 0, nullptr, 0, nullptr},
+        {"header-only", 'h', "Display redo log file's header info only.", nullptr, nullptr, nullptr, GET_NO_ARG, NO_ARG, 0, 0, 0, nullptr, 0, nullptr},
+        {"verbose", 'v', "More verbose output; (you can use this multiple times to get even more verbose output.)",
+         nullptr, nullptr, nullptr, GET_NO_ARG, NO_ARG, 0, 0, 0, nullptr, 0, nullptr},
+        {"start-lsn", 'b', "Set start lsn to print",
+         &opt_start_lsn, &opt_start_lsn, nullptr, GET_ULONG, OPT_ARG, 0, 0, ULONG_MAX, nullptr, 0, nullptr},
+        {"stop-lsn", 'e', "Set stop lsn to print",
+         &opt_stop_lsn, &opt_stop_lsn, nullptr, GET_ULONG, OPT_ARG, 0 /* Need to set default manually because this value is limited to longlong */, 0, ULONG_MAX, nullptr, 0, nullptr},
+        {"version", 'V', "Output version information and exit.", nullptr, nullptr, nullptr, GET_NO_ARG, NO_ARG, 0, 0, 0, nullptr, 0, nullptr},
+        {nullptr, 0, nullptr, nullptr, nullptr, nullptr, GET_NO_ARG, NO_ARG, 0, 0, 0, nullptr, 0, nullptr}
+};
 
 static void usage(void) {
     print_version();
@@ -117,6 +118,9 @@ int main(int argc, char **argv) {
 
     innodb_log *iblog = new(innodb_log);
     int ret = iblog->read_file(filepath);
+    if(opt_stop_lsn == 0) { /* Need to set default manually because this value is limited to longlong */
+        opt_stop_lsn = ULONG_MAX;
+    }
     if(ret) {
         std::cerr <<  "Error: Failed to read redolog file." << std::endl;
     }
@@ -172,8 +176,16 @@ int main(int argc, char **argv) {
     recv_sys_init(); /* initialize recv_sys */
     dict_persist_init();
 
-    recv_sys->parse_start_lsn = ut_uint64_align_down(max_chpt_lsn, OS_FILE_LOG_BLOCK_SIZE) + block_header.m_first_rec_group;
-    std::cout << "recv_sys->parse_start_lsn: " << ut_uint64_align_down(max_chpt_lsn, OS_FILE_LOG_BLOCK_SIZE) + block_header.m_first_rec_group << std::endl;
+    /* set start/stop_lsn */
+    if(opt_start_lsn) {
+      recv_sys->start_lsn = opt_start_lsn;
+    } else {
+      recv_sys->start_lsn = ut_uint64_align_down(max_chpt_lsn, OS_FILE_LOG_BLOCK_SIZE) + block_header.m_first_rec_group;
+    }
+    if(opt_verbose) {
+      std::cout << "recv_sys->parse_start_lsn: " << ut_uint64_align_down(max_chpt_lsn, OS_FILE_LOG_BLOCK_SIZE) + block_header.m_first_rec_group << std::endl;
+    }
+    recv_sys->stop_lsn = opt_stop_lsn;
 
     if(opt_header_only) {
         return 0;

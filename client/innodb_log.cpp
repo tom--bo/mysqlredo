@@ -49,4 +49,3 @@ int innodb_log::deserialize_header() {
     }
     return 0;
 }
-
