@@ -1437,6 +1437,7 @@ static ulint recv_parse_log_rec(mlog_id_t *type, byte *ptr, byte *end_ptr,
         new_ptr = recv_sys->metadata_recover->parseMetadataLog(
             id, version, new_ptr, end_ptr);
       }
+      std::cout << std::endl;
 
       return new_ptr == nullptr ? 0 : new_ptr - ptr;
     case MLOG_TABLE_DYNAMIC_META | MLOG_SINGLE_REC_FLAG:
