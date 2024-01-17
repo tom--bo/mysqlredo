@@ -102,7 +102,7 @@ MYSQL_ADD_EXECUTABLE(mysqlredo
   mylog0log.cc
   mymtr0log.cpp
   INCLUDE_DIRECTORIES ../storage/innobase/include ../storage/innobase
-  LINK_LIBRARIES innobase minchassis # mysqlservices sql_main sql_dd mysys
+  LINK_LIBRARIES innobase mysql_server_component_services minchassis # mysqlservices sql_main sql_dd mysys
 )
 ADD_DEPENDENCIES(mysqlredo minchassis)
 ADD_DEPENDENCIES(mysqlredo innobase minchassis)
