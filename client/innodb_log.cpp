@@ -14,6 +14,8 @@
 #include "log0test.h"
 #include "./mylog0recv.h"
 
+uint opt_verbose_output = 0;
+
 // read file containts to innodb_log.buf
 int innodb_log::read_file(std::string filepath) {
     std::ifstream file(filepath, std::ios::binary | std::ios::ate);
@@ -38,7 +40,6 @@ int innodb_log::read_file(std::string filepath) {
 
     file_size = size;
     buf = (byte *)buffer;
-    std::cout << "Read file Size: " << size << "\n";
 
     return 0;
 }

@@ -392,8 +392,7 @@ static void get_options(int *argc, char ***argv) {
       We need to set verbose to 2 as we need to change the output to include
       the number-of-rows column
     */
-    opt_verbose = 2;
-  }
+    }
   if (debug_info_flag) my_end_arg = MY_CHECK_ERROR | MY_GIVE_INFO;
   if (debug_check_flag) my_end_arg = MY_CHECK_ERROR;
   return;

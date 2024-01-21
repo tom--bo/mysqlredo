@@ -7,6 +7,8 @@
 #include "log0types.h"
 #include "log0files_io.h"
 
+extern uint opt_verbose_output;
+
 class innodb_log {
 public:
     byte *buf;

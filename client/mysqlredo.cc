@@ -27,10 +27,8 @@
 #include "mylog0log.h"
 
 static char *filepath = nullptr;
-static uint opt_verbose = 0;
-bool opt_header_only = false;
-ulong opt_stop_lsn = 0;
-ulong opt_start_lsn = 0;
+bool opt_with_header = false, opt_header_only = false;
+ulong opt_stop_lsn = 0, opt_start_lsn = 0;
 
 static void get_options(int *argc, char ***argv);
 
@@ -38,7 +36,8 @@ static const char *load_default_groups[] = {"mysqlredo", "client", nullptr};
 
 static struct my_option my_long_options[] = {
         {"help", '?', "Display this help and exit.", nullptr, nullptr, nullptr, GET_NO_ARG, NO_ARG, 0, 0, 0, nullptr, 0, nullptr},
-        {"header-only", 'h', "Display redo log file's header info only.", nullptr, nullptr, nullptr, GET_NO_ARG, NO_ARG, 0, 0, 0, nullptr, 0, nullptr},
+        {"header", 'h', "Display redo log file's header info.", nullptr, nullptr, nullptr, GET_NO_ARG, NO_ARG, 0, 0, 0, nullptr, 0, nullptr},
+        {"header-only", 'H', "Display redo log file's header info only.", nullptr, nullptr, nullptr, GET_NO_ARG, NO_ARG, 0, 0, 0, nullptr, 0, nullptr},
         {"verbose", 'v', "More verbose output; (you can use this multiple times to get even more verbose output.)",
          nullptr, nullptr, nullptr, GET_NO_ARG, NO_ARG, 0, 0, 0, nullptr, 0, nullptr},
         {"start-lsn", 'b', "Set start lsn to print",
@@ -66,10 +65,13 @@ static bool get_one_option(int optid, const struct my_option *opt,
                            char *argument) {
     switch (optid) {
         case 'h':
+            opt_with_header = true;
+            break;
+        case 'H':
             opt_header_only = true;
             break;
         case 'v':
-            opt_verbose++;
+            opt_verbose_output++;
             break;
         case 'V':
             print_version();
@@ -98,6 +100,11 @@ int main(int argc, char **argv) {
     if (load_defaults("my", load_default_groups, &argc, &argv, &alloc)) exit(1);
     my_getopt_use_args_separator = false;
 
+    Log_checkpoint_header chpt_header;
+    lsn_t checkpoint_lsn1 = 0, checkpoint_lsn2 = 0;
+    lsn_t max_chpt_lsn = 0, start_chpt_lsn = 0;
+    uint64_t start_chpt_offset, first_block_offset;
+
     get_options(&argc, &argv);
 
     /* Need to call ut_crc32 functions in  log_file_header_deserialize() */
@@ -112,7 +119,7 @@ int main(int argc, char **argv) {
     }
 
     filepath = argv[0];
-    if(opt_verbose) {
+    if(opt_verbose_output > 1) {
         std::cout << "filepath: " << filepath << std::endl;
     }
 
@@ -126,43 +133,57 @@ int main(int argc, char **argv) {
     }
 
     /* Deserialize header block */
-    std::cout <<  "-- Header block" << std::endl;
     ret = iblog->deserialize_header();
     if(ret) {
         std::cerr <<  "Error: Failed to parse header." << std::endl;
     }
 
-    std::cout << "filesize: " << iblog->file_size << std::endl;
-    std::cout << "m_format: " << iblog->header.m_format << std::endl;
-    std::cout << "m_start_lsn: " << iblog->header.m_start_lsn << std::endl;
-    std::cout << "m_creater_name: " << iblog->header.m_creator_name << std::endl;
-
-    std::cout <<  "-- Checkpoint blocks" << std::endl;
-    Log_checkpoint_header chpt_header;
-    lsn_t max_chpt_lsn = 0;
+    /* Print header block info */
+    if(opt_with_header || opt_header_only) {
+      std::cout <<  "-- Header block" << std::endl;
+      std::cout << "filesize: " << iblog->file_size << std::endl;
+      std::cout << "m_format: " << iblog->header.m_format << std::endl;
+      std::cout << "m_start_lsn: " << iblog->header.m_start_lsn << std::endl;
+      std::cout << "m_creater_name: " << iblog->header.m_creator_name << std::endl;
+    }
 
     /* Deserialize checkpoint block 1 */
     if (!log_checkpoint_header_deserialize(iblog->buf + OS_FILE_LOG_BLOCK_SIZE, chpt_header)) {
         std::cout <<  "Error: redo log corrupted." << std::endl;
     }
-    std::cout << "checkpoint 1: " << chpt_header.m_checkpoint_lsn << std::endl;
-    if(max_chpt_lsn < chpt_header.m_checkpoint_lsn) {
-        max_chpt_lsn = chpt_header.m_checkpoint_lsn;
-    }
+    checkpoint_lsn1 = chpt_header.m_checkpoint_lsn;
 
     /* Deserialize checkpoint block 2 */
     if (!log_checkpoint_header_deserialize(iblog->buf + OS_FILE_LOG_BLOCK_SIZE*3, chpt_header)) {
         std::cout <<  "Error: redo log corrupted." << std::endl;
     }
-    std::cout << "checkpoint 2: " << chpt_header.m_checkpoint_lsn << std::endl;
-    if(max_chpt_lsn < chpt_header.m_checkpoint_lsn) {
-        max_chpt_lsn = chpt_header.m_checkpoint_lsn;
+    checkpoint_lsn2 = chpt_header.m_checkpoint_lsn;
+
+    // max_checkpoint_lsn
+    if(checkpoint_lsn1 > checkpoint_lsn2) {
+      max_chpt_lsn = checkpoint_lsn1;
+    } else {
+      max_chpt_lsn = checkpoint_lsn2;
     }
 
     /* Calculate start_lsn offset */
-    uint64_t first_block_offset = iblog->get_offset(ut_uint64_align_down(max_chpt_lsn, OS_FILE_LOG_BLOCK_SIZE), iblog->header.m_start_lsn);
-    uint64_t max_chpt_offset = iblog->get_offset(max_chpt_lsn, iblog->header.m_start_lsn);
-    std::cout << "first_block_offset: " << first_block_offset << std::endl;
+    first_block_offset = iblog->get_offset(ut_uint64_align_down(max_chpt_lsn, OS_FILE_LOG_BLOCK_SIZE), iblog->header.m_start_lsn);
+
+    /* Print checkpoint blocks info */
+    if(opt_with_header || opt_header_only) {
+      std::cout <<  "-- Checkpoint blocks" << std::endl;
+      std::cout << "checkpoint 1: " << checkpoint_lsn1 << std::endl;
+      std::cout << "checkpoint 2: " << checkpoint_lsn2 << std::endl;
+        std::cout << "first_block_offset: " << first_block_offset << std::endl;
+    }
+    if(opt_header_only) {
+      return 0;
+    }
+
+    /* overwrite first_block_offset */
+    if(opt_start_lsn) {
+        first_block_offset = iblog->get_offset(ut_uint64_align_down(opt_start_lsn, OS_FILE_LOG_BLOCK_SIZE), iblog->header.m_start_lsn);
+    }
 
     /* Read the block including checkpoint lsn */
     Log_data_block_header block_header;
@@ -176,20 +197,10 @@ int main(int argc, char **argv) {
     recv_sys_init(); /* initialize recv_sys */
     dict_persist_init();
 
-    /* set start/stop_lsn */
-    if(opt_start_lsn) {
-      recv_sys->start_lsn = opt_start_lsn;
-    } else {
-      recv_sys->start_lsn = ut_uint64_align_down(max_chpt_lsn, OS_FILE_LOG_BLOCK_SIZE) + block_header.m_first_rec_group;
-    }
-    if(opt_verbose) {
+    if(opt_verbose_output > 1) {
       std::cout << "recv_sys->parse_start_lsn: " << ut_uint64_align_down(max_chpt_lsn, OS_FILE_LOG_BLOCK_SIZE) + block_header.m_first_rec_group << std::endl;
     }
     recv_sys->stop_lsn = opt_stop_lsn;
-
-    if(opt_header_only) {
-        return 0;
-    }
 
     std::cout <<  "-- Normal blocks" << std::endl;
 
@@ -199,13 +210,24 @@ int main(int argc, char **argv) {
     recv_sys->buf = static_cast<byte *>(
             ut::malloc_withkey(UT_NEW_THIS_FILE_PSI_KEY, recv_sys->buf_len));
 
-    // // copy buf to recv_sys->buf
-    // ut_memcpy(recv_sys->buf, iblog->buf, iblog->file_size);
-
-
     srv_log_buffer_size = iblog->file_size;
     // modify recv_recovery_begin
-    bool finished = my_parse_begin(iblog->buf, max_chpt_lsn, max_chpt_lsn + iblog->file_size - max_chpt_offset, first_block_offset);
+    if(opt_start_lsn != 0) {
+        start_chpt_lsn = opt_start_lsn;
+        start_chpt_offset = iblog->get_offset(start_chpt_lsn, iblog->header.m_start_lsn);
+    } else {
+        start_chpt_lsn = max_chpt_lsn;
+        start_chpt_offset = iblog->get_offset(max_chpt_lsn, iblog->header.m_start_lsn);
+    }
+    if(opt_verbose_output) {
+        std::cout << "start parsing from lsn of " << start_chpt_lsn << "(" << (start_chpt_lsn - start_chpt_lsn % 512) <<  ")";
+        if(opt_stop_lsn) {
+            std::cout << " to " << opt_stop_lsn;
+        }
+        std::cout << std::endl;
+    }
+
+    bool finished = my_parse_begin(iblog->buf, start_chpt_lsn, start_chpt_lsn + iblog->file_size - start_chpt_offset, first_block_offset);
     if(!finished) {
         std::cerr << "Parse finished in the middle of file."<< std::endl;
     }
