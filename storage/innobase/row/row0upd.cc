@@ -588,7 +588,7 @@ byte *row_upd_parse_sys_vals(const byte *ptr,     /*!< in: buffer */
 
   *trx_id = mach_u64_parse_compressed(&ptr, end_ptr);
 
-  std::cout << ", pos: " << *pos << ", roll_ptr: " << *roll_ptr << ", trx_id" << *trx_id;
+  std::cout << ", pos: " << *pos << ", roll_ptr: " << *roll_ptr << ", trx_id: " << *trx_id;
 
   return (const_cast<byte *>(ptr));
 }

@@ -1400,29 +1400,29 @@ static ulint recv_parse_log_rec(mlog_id_t *type, byte *ptr, byte *end_ptr,
 #endif /* UNIV_LOG_LSN_DEBUG */
 
     case MLOG_MULTI_REC_END:
-      std::cout << "  TYPE: MLOG_MULTI_REC_END" << ", recovered_offset: " << recv_sys->recovered_offset << std::endl;
+      std::cout << "  type: MLOG_MULTI_REC_END" << ", recovered_offset: " << recv_sys->recovered_offset << std::endl;
       *page_no = FIL_NULL;
       *space_id = SPACE_UNKNOWN;
       *type = static_cast<mlog_id_t>(*ptr);
       return 1;
     case MLOG_DUMMY_RECORD:
-      std::cout << "  TYPE: MLOG_DUMMY_RECORD" << ", recovered_offset: " << recv_sys->recovered_offset << std::endl;
+      std::cout << "  type: MLOG_DUMMY_RECORD" << ", recovered_offset: " << recv_sys->recovered_offset << std::endl;
       *page_no = FIL_NULL;
       *space_id = SPACE_UNKNOWN;
       *type = static_cast<mlog_id_t>(*ptr);
       return 1;
 
     case MLOG_MULTI_REC_END | MLOG_SINGLE_REC_FLAG:
-      std::cout << "  TYPE: MLOG_MULTI_REC_END | MLOG_SINGLE_REC_FLAG" << ", recovered_offset: " << recv_sys->recovered_offset << " (This means corruption)" << std::endl;
+      std::cout << "  type: MLOG_MULTI_REC_END | MLOG_SINGLE_REC_FLAG" << ", recovered_offset: " << recv_sys->recovered_offset << " (This means corruption)" << std::endl;
       recv_sys->found_corrupt_log = true;
       return 0;
     case MLOG_DUMMY_RECORD | MLOG_SINGLE_REC_FLAG:
-      std::cout << "  TYPE: MLOG_DUMMY_RECORD | MLOG_SINGLE_REC_FLAG" << ", recovered_offset: " << recv_sys->recovered_offset << " (This means corruption)" << std::endl;
+      std::cout << "  type: MLOG_DUMMY_RECORD | MLOG_SINGLE_REC_FLAG" << ", recovered_offset: " << recv_sys->recovered_offset << " (This means corruption)" << std::endl;
       recv_sys->found_corrupt_log = true;
       return 0;
 
     case MLOG_TABLE_DYNAMIC_META:
-      std::cout << "  TYPE: MLOG_TABLE_DYNAMIC_META" << ", recovered_offset: " << recv_sys->recovered_offset;
+      std::cout << "  type: MLOG_TABLE_DYNAMIC_META" << ", recovered_offset: " << recv_sys->recovered_offset;
       table_id_t id;
       uint64_t version;
 
