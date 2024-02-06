@@ -3,8 +3,8 @@
 This is a prototype of `mysqlredo` command.  
 `mysqlredo` parse innodb redo log and dump redo log records.
 
-Currently, this tool modify and utilize innodb original recv_scan_log_recs().
-`mysqlredo` is a tool to survey or learn innodb redo log.
+Currently, this tool modify and utilize innodb original recv_scan_log_recs().  
+`mysqlredo` is a tool to survey or learn innodb redo log.  
 I tested only MySQL 8.0.32.
 
 
@@ -18,6 +18,7 @@ git clone https://github.com/tom--bo/mysqlredo
 cd mysqlredo
 mkdir bld
 cd bld
+# boost 1.77.0 is bundled
 cmake .. -DWITH_BOOST=../boost_1_77_0
 make mysqlredo
 ```
@@ -26,6 +27,94 @@ make mysqlredo
 
 `mysqlredo --start-lsn=NNN --stop-lsn=MMM /path/to/#ib_redoN`
 
+
+## sample
+
+### Query
+
+For example, I want to see what redo log record one insert query generagtes.
+
+```sql
+mysql> select * from t1;
++----+
+| id |
++----+
+|  1 |
+|  2 |
+...
+|  5 |
++----+
+5 rows in set (0.00 sec)
+
+-- check the current lsn
+mysql> show global status like '%lsn%';
++-------------------------------------+----------+
+| Variable_name                       | Value    |
++-------------------------------------+----------+
+| Innodb_redo_log_checkpoint_lsn      | 19607762 |
+| Innodb_redo_log_current_lsn         | 19607762 |
+| Innodb_redo_log_flushed_to_disk_lsn | 19607762 |
++-------------------------------------+----------+
+3 rows in set (0.01 sec)
+
+-- insert a row (target query)
+mysql> insert into t1 values(10);
+Query OK, 1 row affected (0.01 sec)
+
+-- check the current lsn
+mysql> show global status like '%lsn%';
++-------------------------------------+----------+
+| Variable_name                       | Value    |
++-------------------------------------+----------+
+| Innodb_redo_log_checkpoint_lsn      | 19607874 |
+| Innodb_redo_log_current_lsn         | 19607874 |
+| Innodb_redo_log_flushed_to_disk_lsn | 19607874 |
++-------------------------------------+----------+
+3 rows in set (0.00 sec)
+```
+
+Let's read the redo log by `mysqlredo` command!
+You need to specify the redolog file and start/stop lsn of it.
+
+```shell
+$ mysqlredo  --start-lsn=19607762 --stop-lsn=19607874 /mysql_remote/redo/#innodb_redo/#ib_redo18 -v
+-- Normal blocks
+start parsing from lsn of 19607762(19607552) to 19607874
+- recv_multi_rec(), lsn: 19607622
+  type: MLOG_1BYTES, space: 4294967294, page_no: 0, recovered_offset: 0, offset: 457, val: 171,
+  type: MLOG_1BYTES, space: 4294967294, page_no: 0, recovered_offset: 0, offset: 457, val: 171,
+  type: MLOG_4BYTES, space: 4294967294, page_no: 2, recovered_offset: 0, offset: 8698, val: 24,
+  TYPE: MLOG_MULTI_REC_END, recovered_offset: 0
+- recv_single_rec(), lsn: 19607646
+  type: MLOG_REC_UPDATE_IN_PLACE, space: 4294967294, page_no: 5, recovered_offset: 24, index_log_ver: 1, index_flag: 1, cols: 5, inst_cols: 0, uniq_cols: 1, len[0]: 32776, len[1]: 32774, len[2]: 32775, len[3]: 32776, len[4]: 65535, pos: 1, roll_ptr: 0, trx_id0
+- recv_single_rec(), lsn: 19607699
+  type: MLOG_REC_UPDATE_IN_PLACE, space: 4294967294, page_no: 5, recovered_offset: 77, index_log_ver: 1, index_flag: 1, cols: 5, inst_cols: 0, uniq_cols: 1, len[0]: 32776, len[1]: 32774, len[2]: 32775, len[3]: 32776, len[4]: 65535, pos: 1, roll_ptr: 0, trx_id0
+- recv_single_rec(), lsn: 19607752
+  type: MLOG_8BYTES, space: 0, page_no: 5, recovered_offset: 130, offset: 15908, dval: 2321,
+- recv_multi_rec(), lsn: 19607762
+  type: MLOG_UNDO_HDR_REUSE, space: 4294967279, page_no: 264, recovered_offset: 140
+  type: MLOG_2BYTES, space: 4294967279, page_no: 264, recovered_offset: 140, offset: 40, val: 272,
+  type: MLOG_2BYTES, space: 4294967279, page_no: 264, recovered_offset: 140, offset: 42, val: 272,
+  type: MLOG_2BYTES, space: 4294967279, page_no: 264, recovered_offset: 140, offset: 104, val: 272,
+  TYPE: MLOG_MULTI_REC_END, recovered_offset: 140
+- recv_single_rec(), lsn: 19607800
+  type: MLOG_UNDO_INSERT, space: 4294967279, page_no: 264, recovered_offset: 178, len: 9
+- recv_single_rec(), lsn: 19607816
+  type: MLOG_REC_INSERT, space: 2, page_no: 4, recovered_offset: 194, index_log_ver: 1, index_flag: 1, cols: 3, inst_cols: 0, uniq_cols: 1, len[0]: 32772, len[1]: 32774, len[2]: 32775, offset: 213, end_seg_len: 44
+- recv_single_rec(), lsn: 19607856
+  type: MLOG_2BYTES, space: 4294967279, page_no: 264, recovered_offset: 234, offset: 56, val: 2,
+- recv_single_rec(), lsn: 19607864
+  type: MLOG_8BYTES, space: 0, page_no: 5, recovered_offset: 242, offset: 15908, dval: 2322,
+- recv_multi_rec(), lsn: 19607874
+  type: MLOG_4BYTES, space: 4294967279, page_no: 4, recovered_offset: 252, offset: 50, val: 4294967295,
+  type: MLOG_2BYTES, space: 4294967279, page_no: 4, recovered_offset: 252, offset: 54, val: 0,
+  type: MLOG_4BYTES, space: 4294967279, page_no: 4, recovered_offset: 252, offset: 56, val: 4294967295,
+  type: MLOG_2BYTES, space: 4294967279, page_no: 4, recovered_offset: 252, offset: 60, val: 0,
+  type: MLOG_4BYTES, space: 4294967279, page_no: 4, recovered_offset: 252, offset: 46, val: 0,
+  TYPE: MLOG_MULTI_REC_END, recovered_offset: 252
+Parse END
+scanned_lsn: 19608118, recovered_lsn: 19607912
+```
 
 
 # Copyright (original readme contents)
