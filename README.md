@@ -3,11 +3,32 @@
 This is a prototype of `mysqlredo` command.  
 `mysqlredo` parse innodb redo log and dump redo log records.
 
-Currently, this tool modify and utilize innodb original recv_scan_log_recs() methods.
+Currently, this tool modify and utilize innodb original recv_scan_log_recs().
+`mysqlredo` is a tool to survey or learn innodb redo log.
+I tested only MySQL 8.0.32.
 
-There is no documents to use this tool. I'll add them soon.
 
-(Should be updated below)
+## How to build
+
+You can compile just like mysql-client tools.
+cf) https://dev.mysql.com/doc/refman/8.0/en/source-installation.html
+
+```sh
+git clone https://github.com/tom--bo/mysqlredo
+cd mysqlredo
+mkdir bld
+cd bld
+cmake .. -DWITH_BOOST=../boost_1_77_0
+make mysqlredo
+```
+
+## How to run
+
+`mysqlredo --start-lsn=NNN --stop-lsn=MMM /path/to/#ib_redoN`
+
+
+
+# Copyright (original readme contents)
 
 Copyright (c) 2000, 2023, Oracle and/or its affiliates.
 
