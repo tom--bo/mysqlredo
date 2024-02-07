@@ -83,27 +83,27 @@ static byte *recv_parse_or_apply_log_rec_body(
   switch (type) {
 #ifndef UNIV_HOTBACKUP
     case MLOG_FILE_DELETE:
-      std::cout << "  type: MLOG_FILE_DELETE, space: " << space_id << ", page_no: " << page_no << ", recovered_offset: " << recv_sys->recovered_offset;
+      std::cout << "  type: MLOG_FILE_DELETE, space: " << space_id << ", page_no: " << page_no;
       return fil_tablespace_redo_delete(
           ptr, end_ptr, page_id_t(space_id, page_no), parsed_bytes,
           recv_sys->bytes_to_ignore_before_checkpoint != 0);
 
     case MLOG_FILE_CREATE:
-      std::cout << "  type: MLOG_FILE_CREATE, space: " << space_id << ", page_no: " << page_no << ", recovered_offset: " << recv_sys->recovered_offset;
+      std::cout << "  type: MLOG_FILE_CREATE, space: " << space_id << ", page_no: " << page_no;
 
       return fil_tablespace_redo_create(
           ptr, end_ptr, page_id_t(space_id, page_no), parsed_bytes,
           recv_sys->bytes_to_ignore_before_checkpoint != 0);
 
     case MLOG_FILE_RENAME:
-      std::cout << "  type: MLOG_FILE_RENAME, space: " << space_id << ", page_no: " << page_no << ", recovered_offset: " << recv_sys->recovered_offset;
+      std::cout << "  type: MLOG_FILE_RENAME, space: " << space_id << ", page_no: " << page_no;
 
       return fil_tablespace_redo_rename(
           ptr, end_ptr, page_id_t(space_id, page_no), parsed_bytes,
           recv_sys->bytes_to_ignore_before_checkpoint != 0);
 
     case MLOG_FILE_EXTEND:
-      std::cout << "  type: MLOG_FILE_EXTEND, space: " << space_id << ", page_no: " << page_no << ", recovered_offset: " << recv_sys->recovered_offset;
+      std::cout << "  type: MLOG_FILE_EXTEND, space: " << space_id << ", page_no: " << page_no;
 
       return fil_tablespace_redo_extend(
           ptr, end_ptr, page_id_t(space_id, page_no), parsed_bytes,
@@ -139,7 +139,7 @@ static byte *recv_parse_or_apply_log_rec_body(
 #endif /* !UNIV_HOTBACKUP */
 
     case MLOG_INDEX_LOAD:
-      std::cout << "  type: MLOG_INDEX_LOAD, space: " << space_id << ", page_no: " << page_no << ", recovered_offset: " << recv_sys->recovered_offset;
+      std::cout << "  type: MLOG_INDEX_LOAD, space: " << space_id << ", page_no: " << page_no;
 #ifdef UNIV_HOTBACKUP
       // While scanning redo logs during a backup operation a
       // MLOG_INDEX_LOAD type redo log record indicates, that a DDL
@@ -159,7 +159,7 @@ static byte *recv_parse_or_apply_log_rec_body(
       return ptr + 8;
 
     case MLOG_WRITE_STRING:
-      std::cout << "  type: MLOG_WRITE_STRING, space: " << space_id << ", page_no: " << page_no << ", recovered_offset: " << recv_sys->recovered_offset;
+      std::cout << "  type: MLOG_WRITE_STRING, space: " << space_id << ", page_no: " << page_no;
 
 #ifdef UNIV_HOTBACKUP
       if (recv_recovery_on && meb_is_space_loaded(space_id)) {
@@ -235,7 +235,7 @@ static byte *recv_parse_or_apply_log_rec_body(
       break;
 #endif /* UNIV_LOG_LSN_DEBUG */
     case MLOG_4BYTES:
-      std::cout << "  type: MLOG_4BYTES, space: " << space_id << ", page_no: " << page_no << ", recovered_offset: " << recv_sys->recovered_offset;
+      std::cout << "  type: MLOG_4BYTES, space: " << space_id << ", page_no: " << page_no;
 
       ut_ad(page == nullptr || end_ptr > ptr + 2);
 
@@ -414,7 +414,7 @@ static byte *recv_parse_or_apply_log_rec_body(
      break;
 
     case MLOG_1BYTE:
-      std::cout << "  type: MLOG_1BYTES, space: " << space_id << ", page_no: " << page_no << ", recovered_offset: " << recv_sys->recovered_offset;
+      std::cout << "  type: MLOG_1BYTES, space: " << space_id << ", page_no: " << page_no;
       /* If 'ALTER TABLESPACE ... ENCRYPTION' was in progress and page 0 has
       REDO entry for this, now while applying this entry, set
       encryption_op_in_progress flag now so that any other page of this
@@ -567,7 +567,7 @@ static byte *recv_parse_or_apply_log_rec_body(
      break;
 
     case MLOG_2BYTES:
-      std::cout << "  type: MLOG_2BYTES, space: " << space_id << ", page_no: " << page_no << ", recovered_offset: " << recv_sys->recovered_offset;
+      std::cout << "  type: MLOG_2BYTES, space: " << space_id << ", page_no: " << page_no;
 #ifdef UNIV_DEBUG
      if (page && page_type == FIL_PAGE_TYPE_ALLOCATED && end_ptr >= ptr + 2) {
          /* It is OK to set FIL_PAGE_TYPE and certain
@@ -689,7 +689,7 @@ static byte *recv_parse_or_apply_log_rec_body(
      break;
 
       case MLOG_8BYTES:
-      std::cout << "  type: MLOG_8BYTES, space: " << space_id << ", page_no: " << page_no << ", recovered_offset: " << recv_sys->recovered_offset;
+      std::cout << "  type: MLOG_8BYTES, space: " << space_id << ", page_no: " << page_no;
 #ifdef UNIV_DEBUG
       if (page && page_type == FIL_PAGE_TYPE_ALLOCATED && end_ptr >= ptr + 2) {
         /* It is OK to set FIL_PAGE_TYPE and certain
@@ -811,7 +811,7 @@ static byte *recv_parse_or_apply_log_rec_body(
       break;
 
     case MLOG_REC_INSERT:
-      std::cout << "  type: MLOG_REC_INSERT, space: " << space_id << ", page_no: " << page_no << ", recovered_offset: " << recv_sys->recovered_offset;
+      std::cout << "  type: MLOG_REC_INSERT, space: " << space_id << ", page_no: " << page_no;
 
       ut_ad(!page || fil_page_type_is_index(page_type));
 
@@ -823,9 +823,9 @@ static byte *recv_parse_or_apply_log_rec_body(
       break;
 
     case MLOG_REC_INSERT_8027:
-        std::cout << "  type: MLOG_REC_INSERT_8027, space: " << space_id << ", page_no: " << page_no << ", recovered_offset: " << recv_sys->recovered_offset;
+        std::cout << "  type: MLOG_REC_INSERT_8027, space: " << space_id << ", page_no: " << page_no;
     case MLOG_COMP_REC_INSERT_8027:
-        std::cout << "  type: MLOG_COMP_REC_INSERT_8027, space: " << space_id << ", page_no: " << page_no << ", recovered_offset: " << recv_sys->recovered_offset;
+        std::cout << "  type: MLOG_COMP_REC_INSERT_8027, space: " << space_id << ", page_no: " << page_no;
 
       ut_ad(!page || fil_page_type_is_index(page_type));
 
@@ -839,7 +839,7 @@ static byte *recv_parse_or_apply_log_rec_body(
       break;
 
     case MLOG_REC_CLUST_DELETE_MARK:
-      std::cout << "  type: MLOG_REC_CLUST_DELETE_MARK, space: " << space_id << ", page_no: " << page_no << ", recovered_offset: " << recv_sys->recovered_offset;
+      std::cout << "  type: MLOG_REC_CLUST_DELETE_MARK, space: " << space_id << ", page_no: " << page_no;
 
       ut_ad(!page || fil_page_type_is_index(page_type));
 
@@ -853,9 +853,9 @@ static byte *recv_parse_or_apply_log_rec_body(
       break;
 
     case MLOG_REC_CLUST_DELETE_MARK_8027:
-        std::cout << "  type: MLOG_REC_CLUST_DELETE_MARK_8027, space: " << space_id << ", page_no: " << page_no << ", recovered_offset: " << recv_sys->recovered_offset;
+        std::cout << "  type: MLOG_REC_CLUST_DELETE_MARK_8027, space: " << space_id << ", page_no: " << page_no;
     case MLOG_COMP_REC_CLUST_DELETE_MARK_8027:
-        std::cout << "  type: MLOG_COMP_REC_CLUST_DELETE_MARK_8027, space: " << space_id << ", page_no: " << page_no << ", recovered_offset: " << recv_sys->recovered_offset;
+        std::cout << "  type: MLOG_COMP_REC_CLUST_DELETE_MARK_8027, space: " << space_id << ", page_no: " << page_no;
 
       ut_ad(!page || fil_page_type_is_index(page_type));
 
@@ -872,7 +872,7 @@ static byte *recv_parse_or_apply_log_rec_body(
       break;
 
     case MLOG_COMP_REC_SEC_DELETE_MARK:
-      std::cout << "  type: MLOG_COMP_REC_SEC_DELETE_MARK, space: " << space_id << ", page_no: " << page_no << ", recovered_offset: " << recv_sys->recovered_offset << std::endl;
+      std::cout << "  type: MLOG_COMP_REC_SEC_DELETE_MARK, space: " << space_id << ", page_no: " << page_no << std::endl;
 
       ut_ad(!page || fil_page_type_is_index(page_type));
 
@@ -891,7 +891,7 @@ static byte *recv_parse_or_apply_log_rec_body(
       [[fallthrough]];
 
     case MLOG_REC_SEC_DELETE_MARK:
-      std::cout << "  type: MLOG_REC_SEC_DELETE_MARK, space: " << space_id << ", page_no: " << page_no << ", recovered_offset: " << recv_sys->recovered_offset;
+      std::cout << "  type: MLOG_REC_SEC_DELETE_MARK, space: " << space_id << ", page_no: " << page_no;
 
       ut_ad(!page || fil_page_type_is_index(page_type));
 
@@ -899,7 +899,7 @@ static byte *recv_parse_or_apply_log_rec_body(
       break;
 
     case MLOG_REC_UPDATE_IN_PLACE:
-      std::cout << "  type: MLOG_REC_UPDATE_IN_PLACE, space: " << space_id << ", page_no: " << page_no << ", recovered_offset: " << recv_sys->recovered_offset;
+      std::cout << "  type: MLOG_REC_UPDATE_IN_PLACE, space: " << space_id << ", page_no: " << page_no;
 
       ut_ad(!page || fil_page_type_is_index(page_type));
 
@@ -913,9 +913,9 @@ static byte *recv_parse_or_apply_log_rec_body(
       break;
 
     case MLOG_REC_UPDATE_IN_PLACE_8027:
-        std::cout << "  type: MLOG_REC_UPDATE_IN_PLACE_8027, space: " << space_id << ", page_no: " << page_no << ", recovered_offset: " << recv_sys->recovered_offset;
+        std::cout << "  type: MLOG_REC_UPDATE_IN_PLACE_8027, space: " << space_id << ", page_no: " << page_no;
     case MLOG_COMP_REC_UPDATE_IN_PLACE_8027:
-        std::cout << "  type: MLOG_COMP_REC_UPDATE_IN_PLACE_8027, space: " << space_id << ", page_no: " << page_no << ", recovered_offset: " << recv_sys->recovered_offset;
+        std::cout << "  type: MLOG_COMP_REC_UPDATE_IN_PLACE_8027, space: " << space_id << ", page_no: " << page_no;
 
       ut_ad(!page || fil_page_type_is_index(page_type));
 
@@ -932,7 +932,7 @@ static byte *recv_parse_or_apply_log_rec_body(
       break;
 
     case MLOG_LIST_END_DELETE:
-      std::cout << "  type: MLOG_LIST_END_DELETE, space: " << space_id << ", page_no: " << page_no << ", recovered_offset: " << recv_sys->recovered_offset;
+      std::cout << "  type: MLOG_LIST_END_DELETE, space: " << space_id << ", page_no: " << page_no;
 
       ut_ad(!page || fil_page_type_is_index(page_type));
 
@@ -945,7 +945,7 @@ static byte *recv_parse_or_apply_log_rec_body(
       break;
 
     case MLOG_LIST_START_DELETE:
-      std::cout << "  type: MLOG_LIST_START_DELETE, space: " << space_id << ", page_no: " << page_no << ", recovered_offset: " << recv_sys->recovered_offset;
+      std::cout << "  type: MLOG_LIST_START_DELETE, space: " << space_id << ", page_no: " << page_no;
 
       ut_ad(!page || fil_page_type_is_index(page_type));
 
@@ -961,7 +961,7 @@ static byte *recv_parse_or_apply_log_rec_body(
     case MLOG_COMP_LIST_END_DELETE_8027:
     case MLOG_LIST_START_DELETE_8027:
     case MLOG_COMP_LIST_START_DELETE_8027:
-      std::cout << "  type: MLOG_LIST_..._8027, space: " << space_id << ", page_no: " << page_no << ", recovered_offset: " << recv_sys->recovered_offset;
+      std::cout << "  type: MLOG_LIST_..._8027, space: " << space_id << ", page_no: " << page_no;
 
       ut_ad(!page || fil_page_type_is_index(page_type));
 
@@ -978,7 +978,7 @@ static byte *recv_parse_or_apply_log_rec_body(
       break;
 
     case MLOG_LIST_END_COPY_CREATED:
-      std::cout << "  type: MLOG_LIST_END_COPY_CREATED, space: " << space_id << ", page_no: " << page_no << ", recovered_offset: " << recv_sys->recovered_offset;
+      std::cout << "  type: MLOG_LIST_END_COPY_CREATED, space: " << space_id << ", page_no: " << page_no;
 
       ut_ad(!page || fil_page_type_is_index(page_type));
 
@@ -993,7 +993,7 @@ static byte *recv_parse_or_apply_log_rec_body(
 
     case MLOG_LIST_END_COPY_CREATED_8027:
     case MLOG_COMP_LIST_END_COPY_CREATED_8027:
-      std::cout << "  type: MLOG_LIST_..._8027, space: " << space_id << ", page_no: " << page_no << ", recovered_offset: " << recv_sys->recovered_offset;
+      std::cout << "  type: MLOG_LIST_..._8027, space: " << space_id << ", page_no: " << page_no;
 
       ut_ad(!page || fil_page_type_is_index(page_type));
 
@@ -1010,7 +1010,7 @@ static byte *recv_parse_or_apply_log_rec_body(
       break;
 
     case MLOG_PAGE_REORGANIZE:
-      std::cout << "  type: MLOG_PAGE_REORGANIZE, space: " << space_id << ", page_no: " << page_no << ", recovered_offset: " << recv_sys->recovered_offset;
+      std::cout << "  type: MLOG_PAGE_REORGANIZE, space: " << space_id << ", page_no: " << page_no;
 
       ut_ad(!page || fil_page_type_is_index(page_type));
 
@@ -1025,7 +1025,7 @@ static byte *recv_parse_or_apply_log_rec_body(
       break;
 
     case MLOG_PAGE_REORGANIZE_8027:
-      std::cout << "  type: MLOG_LIST_..._8027, space: " << space_id << ", page_no: " << page_no << ", recovered_offset: " << recv_sys->recovered_offset;
+      std::cout << "  type: MLOG_LIST_..._8027, space: " << space_id << ", page_no: " << page_no;
       ut_ad(!page || fil_page_type_is_index(page_type));
       /* Uncompressed pages don't have any payload in the
       MTR so ptr and end_ptr can be, and are nullptr */
@@ -1037,7 +1037,7 @@ static byte *recv_parse_or_apply_log_rec_body(
       break;
 
     case MLOG_ZIP_PAGE_REORGANIZE:
-      std::cout << "  type: MLOG_ZIP_PAGE_REORGANIZE, space: " << space_id << ", page_no: " << page_no << ", recovered_offset: " << recv_sys->recovered_offset;
+      std::cout << "  type: MLOG_ZIP_PAGE_REORGANIZE, space: " << space_id << ", page_no: " << page_no;
 
       ut_ad(!page || fil_page_type_is_index(page_type));
 
@@ -1051,7 +1051,7 @@ static byte *recv_parse_or_apply_log_rec_body(
 
     case MLOG_COMP_PAGE_REORGANIZE_8027:
     case MLOG_ZIP_PAGE_REORGANIZE_8027:
-      std::cout << "  type: MLOG_LIST_..._8027, space: " << space_id << ", page_no: " << page_no << ", recovered_offset: " << recv_sys->recovered_offset;
+      std::cout << "  type: MLOG_LIST_..._8027, space: " << space_id << ", page_no: " << page_no;
 
       ut_ad(!page || fil_page_type_is_index(page_type));
 
@@ -1067,7 +1067,7 @@ static byte *recv_parse_or_apply_log_rec_body(
       break;
 
     case MLOG_PAGE_CREATE:
-      std::cout << "  type: MLOG_PAGE_CREATE, space: " << space_id << ", page_no: " << page_no << ", recovered_offset: " << recv_sys->recovered_offset;
+      std::cout << "  type: MLOG_PAGE_CREATE, space: " << space_id << ", page_no: " << page_no;
 
       /* Allow anything in page_type when creating a page. */
       ut_a(!page_zip);
@@ -1077,7 +1077,7 @@ static byte *recv_parse_or_apply_log_rec_body(
       break;
 
       case MLOG_COMP_PAGE_CREATE:
-      std::cout << "  type: MLOG_COMP_PAGE_CREATE, space: " << space_id << ", page_no: " << page_no << ", recovered_offset: " << recv_sys->recovered_offset;
+      std::cout << "  type: MLOG_COMP_PAGE_CREATE, space: " << space_id << ", page_no: " << page_no;
 
       /* Allow anything in page_type when creating a page. */
       ut_a(!page_zip);
@@ -1087,10 +1087,10 @@ static byte *recv_parse_or_apply_log_rec_body(
       break;
 
     case MLOG_PAGE_CREATE_RTREE:
-      std::cout << "  type: MLOG_PAGE_CREATE_RTREE, space: " << space_id << ", page_no: " << page_no << ", recovered_offset: " << recv_sys->recovered_offset;
+      std::cout << "  type: MLOG_PAGE_CREATE_RTREE, space: " << space_id << ", page_no: " << page_no;
       [[fallthrough]];
     case MLOG_COMP_PAGE_CREATE_RTREE:
-      std::cout << "  type: MLOG_COMP_PAGE_CREATE_RTREE, space: " << space_id << ", page_no: " << page_no << ", recovered_offset: " << recv_sys->recovered_offset;
+      std::cout << "  type: MLOG_COMP_PAGE_CREATE_RTREE, space: " << space_id << ", page_no: " << page_no;
 
       page_parse_create(block, type == MLOG_COMP_PAGE_CREATE_RTREE,
                         FIL_PAGE_RTREE);
@@ -1098,21 +1098,21 @@ static byte *recv_parse_or_apply_log_rec_body(
       break;
 
     case MLOG_PAGE_CREATE_SDI:
-      std::cout << "  type: MLOG_PAGE_CREATE_SDI, space: " << space_id << ", page_no: " << page_no << ", recovered_offset: " << recv_sys->recovered_offset;
+      std::cout << "  type: MLOG_PAGE_CREATE_SDI, space: " << space_id << ", page_no: " << page_no;
 
       page_parse_create(block, type == MLOG_COMP_PAGE_CREATE_SDI, FIL_PAGE_SDI);
 
       break;
 
     case MLOG_COMP_PAGE_CREATE_SDI:
-        std::cout << "  type: MLOG_COMP_PAGE_CREATE_SDI, space: " << space_id << ", page_no: " << page_no << ", recovered_offset: " << recv_sys->recovered_offset;
+        std::cout << "  type: MLOG_COMP_PAGE_CREATE_SDI, space: " << space_id << ", page_no: " << page_no;
 
       page_parse_create(block, type == MLOG_COMP_PAGE_CREATE_SDI, FIL_PAGE_SDI);
 
       break;
 
     case MLOG_UNDO_INSERT:
-      std::cout << "  type: MLOG_UNDO_INSERT, space: " << space_id << ", page_no: " << page_no << ", recovered_offset: " << recv_sys->recovered_offset;
+      std::cout << "  type: MLOG_UNDO_INSERT, space: " << space_id << ", page_no: " << page_no;
 
       ut_ad(!page || page_type == FIL_PAGE_UNDO_LOG);
 
@@ -1121,7 +1121,7 @@ static byte *recv_parse_or_apply_log_rec_body(
       break;
 
     case MLOG_UNDO_ERASE_END:
-      std::cout << "  type: MLOG_UNDO_ERASE_END, space: " << space_id << ", page_no: " << page_no << ", recovered_offset: " << recv_sys->recovered_offset;
+      std::cout << "  type: MLOG_UNDO_ERASE_END, space: " << space_id << ", page_no: " << page_no;
 
       ut_ad(!page || page_type == FIL_PAGE_UNDO_LOG);
 
@@ -1130,7 +1130,7 @@ static byte *recv_parse_or_apply_log_rec_body(
       break;
 
     case MLOG_UNDO_INIT:
-      std::cout << "  type: MLOG_UNDO_INIT, space: " << space_id << ", page_no: " << page_no << ", recovered_offset: " << recv_sys->recovered_offset;
+      std::cout << "  type: MLOG_UNDO_INIT, space: " << space_id << ", page_no: " << page_no;
 
       /* Allow anything in page_type when creating a page. */
 
@@ -1138,7 +1138,7 @@ static byte *recv_parse_or_apply_log_rec_body(
 
       break;
     case MLOG_UNDO_HDR_CREATE:
-      std::cout << "  type: MLOG_UNDO_HDR_CREATE, space: " << space_id << ", page_no: " << page_no << ", recovered_offset: " << recv_sys->recovered_offset;
+      std::cout << "  type: MLOG_UNDO_HDR_CREATE, space: " << space_id << ", page_no: " << page_no;
 
       ut_ad(!page || page_type == FIL_PAGE_UNDO_LOG);
 
@@ -1147,7 +1147,7 @@ static byte *recv_parse_or_apply_log_rec_body(
       break;
 
       case MLOG_UNDO_HDR_REUSE:
-      std::cout << "  type: MLOG_UNDO_HDR_REUSE, space: " << space_id << ", page_no: " << page_no << ", recovered_offset: " << recv_sys->recovered_offset;
+      std::cout << "  type: MLOG_UNDO_HDR_REUSE, space: " << space_id << ", page_no: " << page_no;
 
       ut_ad(!page || page_type == FIL_PAGE_UNDO_LOG);
 
@@ -1156,11 +1156,11 @@ static byte *recv_parse_or_apply_log_rec_body(
       break;
 
     case MLOG_REC_MIN_MARK:
-      std::cout << "  type: MLOG_REC_MIN_MARK, space: " << space_id << ", page_no: " << page_no << ", recovered_offset: " << recv_sys->recovered_offset;
+      std::cout << "  type: MLOG_REC_MIN_MARK, space: " << space_id << ", page_no: " << page_no;
       [[fallthrough]];
 
     case MLOG_COMP_REC_MIN_MARK:
-      std::cout << "  type: MLOG_COMP_REC_MIN_MARK, space: " << space_id << ", page_no: " << page_no << ", recovered_offset: " << recv_sys->recovered_offset;
+      std::cout << "  type: MLOG_COMP_REC_MIN_MARK, space: " << space_id << ", page_no: " << page_no;
 
       ut_ad(!page || fil_page_type_is_index(page_type));
 
@@ -1177,7 +1177,7 @@ static byte *recv_parse_or_apply_log_rec_body(
       break;
 
     case MLOG_REC_DELETE:
-      std::cout << "  type: MLOG_REC_DELETE, space: " << space_id << ", page_no: " << page_no << ", recovered_offset: " << recv_sys->recovered_offset;
+      std::cout << "  type: MLOG_REC_DELETE, space: " << space_id << ", page_no: " << page_no;
 
       ut_ad(!page || fil_page_type_is_index(page_type));
 
@@ -1190,9 +1190,9 @@ static byte *recv_parse_or_apply_log_rec_body(
       break;
 
     case MLOG_REC_DELETE_8027:
-        std::cout << "  type: MLOG_REC_DELETE_8027, space: " << space_id << ", page_no: " << page_no << ", recovered_offset: " << recv_sys->recovered_offset;
+        std::cout << "  type: MLOG_REC_DELETE_8027, space: " << space_id << ", page_no: " << page_no;
     case MLOG_COMP_REC_DELETE_8027:
-        std::cout << "  type: MLOG_COMP_REC_DELETE_8027, space: " << space_id << ", page_no: " << page_no << ", recovered_offset: " << recv_sys->recovered_offset;
+        std::cout << "  type: MLOG_COMP_REC_DELETE_8027, space: " << space_id << ", page_no: " << page_no;
 
       ut_ad(!page || fil_page_type_is_index(page_type));
 
@@ -1207,7 +1207,7 @@ static byte *recv_parse_or_apply_log_rec_body(
       break;
 
     case MLOG_IBUF_BITMAP_INIT:
-      std::cout << "  type: MLOG_IBUF_BITMAP_INIT, space: " << space_id << ", page_no: " << page_no << ", recovered_offset: " << recv_sys->recovered_offset;
+      std::cout << "  type: MLOG_IBUF_BITMAP_INIT, space: " << space_id << ", page_no: " << page_no;
 
       /* Allow anything in page_type when creating a page. */
 
@@ -1216,10 +1216,10 @@ static byte *recv_parse_or_apply_log_rec_body(
       break;
 
     case MLOG_INIT_FILE_PAGE:
-      std::cout << "  type: MLOG_INIT_FILE_PAGE, space: " << space_id << ", page_no: " << page_no << ", recovered_offset: " << recv_sys->recovered_offset;
+      std::cout << "  type: MLOG_INIT_FILE_PAGE, space: " << space_id << ", page_no: " << page_no;
       [[fallthrough]];
     case MLOG_INIT_FILE_PAGE2: {
-      std::cout << "  type: MLOG_INIT_FILE_PAGE2, space: " << space_id << ", page_no: " << page_no << ", recovered_offset: " << recv_sys->recovered_offset;
+      std::cout << "  type: MLOG_INIT_FILE_PAGE2, space: " << space_id << ", page_no: " << page_no;
       /* For clone, avoid initializing page-0. Page-0 should already have been
       initialized. This is to avoid erasing encryption information. We cannot
       update encryption information later with redo logged information for
@@ -1234,7 +1234,7 @@ static byte *recv_parse_or_apply_log_rec_body(
     }
 
     case MLOG_WRITE_STRING: {
-      std::cout << "  type: MLOG_WRITE_STRING, space: " << space_id << ", page_no: " << page_no << ", recovered_offset: " << recv_sys->recovered_offset;
+      std::cout << "  type: MLOG_WRITE_STRING, space: " << space_id << ", page_no: " << page_no;
       ut_ad(!page || page_type != FIL_PAGE_TYPE_ALLOCATED || page_no == 0);
       bool is_encryption = check_encryption(page_no, space_id, ptr, end_ptr);
 
@@ -1264,7 +1264,7 @@ static byte *recv_parse_or_apply_log_rec_body(
     }
 
     case MLOG_ZIP_WRITE_NODE_PTR:
-      std::cout << "  type: MLOG_ZIP_WRITE_NODE_PTR, space: " << space_id << ", page_no: " << page_no << ", recovered_offset: " << recv_sys->recovered_offset;
+      std::cout << "  type: MLOG_ZIP_WRITE_NODE_PTR, space: " << space_id << ", page_no: " << page_no;
 
       ut_ad(!page || fil_page_type_is_index(page_type));
 
@@ -1273,7 +1273,7 @@ static byte *recv_parse_or_apply_log_rec_body(
       break;
 
     case MLOG_ZIP_WRITE_BLOB_PTR:
-      std::cout << "  type: MLOG_ZIP_WRITE_BLOB_PTR, space: " << space_id << ", page_no: " << page_no << ", recovered_offset: " << recv_sys->recovered_offset;
+      std::cout << "  type: MLOG_ZIP_WRITE_BLOB_PTR, space: " << space_id << ", page_no: " << page_no;
 
       ut_ad(!page || fil_page_type_is_index(page_type));
 
@@ -1282,7 +1282,7 @@ static byte *recv_parse_or_apply_log_rec_body(
       break;
 
     case MLOG_ZIP_WRITE_HEADER:
-      std::cout << "  type: MLOG_ZIP_WRITE_HEADER, space: " << space_id << ", page_no: " << page_no << ", recovered_offset: " << recv_sys->recovered_offset;
+      std::cout << "  type: MLOG_ZIP_WRITE_HEADER, space: " << space_id << ", page_no: " << page_no;
 
       ut_ad(!page || fil_page_type_is_index(page_type));
 
@@ -1291,14 +1291,14 @@ static byte *recv_parse_or_apply_log_rec_body(
       break;
 
     case MLOG_ZIP_PAGE_COMPRESS:
-        std::cout << "  type: MLOG_ZIP_PAGE_COMPRESS, space: " << space_id << ", page_no: " << page_no << ", recovered_offset: " << recv_sys->recovered_offset;
+        std::cout << "  type: MLOG_ZIP_PAGE_COMPRESS, space: " << space_id << ", page_no: " << page_no;
 
       /* Allow anything in page_type when creating a page. */
       ptr = page_zip_parse_compress(ptr, end_ptr, page, page_zip);
       break;
 
     case MLOG_ZIP_PAGE_COMPRESS_NO_DATA:
-        std::cout << "  type: MLOG_ZIP_PAGE_COMPRESS_NO_DATA, space: " << space_id << ", page_no: " << page_no << ", recovered_offset: " << recv_sys->recovered_offset;
+        std::cout << "  type: MLOG_ZIP_PAGE_COMPRESS_NO_DATA, space: " << space_id << ", page_no: " << page_no;
 
       if (nullptr != (ptr = mlog_parse_index(ptr, end_ptr, &index))) {
         ut_a(!page || (page_is_comp(page) == dict_table_is_comp(index->table)));
@@ -1322,7 +1322,7 @@ static byte *recv_parse_or_apply_log_rec_body(
       break;
 
     case MLOG_TEST:
-      std::cout << "  type: MLOG_TEST, space: " << space_id << ", page_no: " << page_no << ", recovered_offset: " << recv_sys->recovered_offset;
+      std::cout << "  type: MLOG_TEST, space: " << space_id << ", page_no: " << page_no;
 #ifndef UNIV_HOTBACKUP
       if (log_test != nullptr) {
         ptr = log_test->parse_mlog_rec(ptr, end_ptr);
@@ -1400,29 +1400,29 @@ static ulint recv_parse_log_rec(mlog_id_t *type, byte *ptr, byte *end_ptr,
 #endif /* UNIV_LOG_LSN_DEBUG */
 
     case MLOG_MULTI_REC_END:
-      std::cout << "  type: MLOG_MULTI_REC_END" << ", recovered_offset: " << recv_sys->recovered_offset << std::endl;
+      std::cout << "  type: MLOG_MULTI_REC_END" << std::endl;
       *page_no = FIL_NULL;
       *space_id = SPACE_UNKNOWN;
       *type = static_cast<mlog_id_t>(*ptr);
       return 1;
     case MLOG_DUMMY_RECORD:
-      std::cout << "  type: MLOG_DUMMY_RECORD" << ", recovered_offset: " << recv_sys->recovered_offset << std::endl;
+      std::cout << "  type: MLOG_DUMMY_RECORD" << std::endl;
       *page_no = FIL_NULL;
       *space_id = SPACE_UNKNOWN;
       *type = static_cast<mlog_id_t>(*ptr);
       return 1;
 
     case MLOG_MULTI_REC_END | MLOG_SINGLE_REC_FLAG:
-      std::cout << "  type: MLOG_MULTI_REC_END | MLOG_SINGLE_REC_FLAG" << ", recovered_offset: " << recv_sys->recovered_offset << " (This means corruption)" << std::endl;
+      std::cout << "  type: MLOG_MULTI_REC_END | MLOG_SINGLE_REC_FLAG" << " (This means corruption)" << std::endl;
       recv_sys->found_corrupt_log = true;
       return 0;
     case MLOG_DUMMY_RECORD | MLOG_SINGLE_REC_FLAG:
-      std::cout << "  type: MLOG_DUMMY_RECORD | MLOG_SINGLE_REC_FLAG" << ", recovered_offset: " << recv_sys->recovered_offset << " (This means corruption)" << std::endl;
+      std::cout << "  type: MLOG_DUMMY_RECORD | MLOG_SINGLE_REC_FLAG" << " (This means corruption)" << std::endl;
       recv_sys->found_corrupt_log = true;
       return 0;
 
     case MLOG_TABLE_DYNAMIC_META:
-      std::cout << "  type: MLOG_TABLE_DYNAMIC_META" << ", recovered_offset: " << recv_sys->recovered_offset;
+      std::cout << "  type: MLOG_TABLE_DYNAMIC_META";
       table_id_t id;
       uint64_t version;
 
@@ -1441,14 +1441,14 @@ static ulint recv_parse_log_rec(mlog_id_t *type, byte *ptr, byte *end_ptr,
 
       return new_ptr == nullptr ? 0 : new_ptr - ptr;
     case MLOG_TABLE_DYNAMIC_META | MLOG_SINGLE_REC_FLAG:
-      std::cout << "MLOG_TABLE_DYNAMIC_META | MLOG_SINGLE_REC_FLAG" << ", recovered_offset: " << recv_sys->recovered_offset << " ";
+      std::cout << "MLOG_TABLE_DYNAMIC_META | MLOG_SINGLE_REC_FLAG";
 
       *page_no = FIL_NULL;
       *space_id = SPACE_UNKNOWN;
 
       new_ptr =
           mlog_parse_initial_dict_log_record(ptr, end_ptr, type, &id, &version);
-      std::cout << "table_id: " << id << "version: " << version << " (TBD. metadata log follows)" << std::endl;
+      std::cout << ", table_id: " << id << ", version: " << version << " (TBD. metadata log follows)" << std::endl;
 
       if (new_ptr != nullptr) {
         new_ptr = recv_sys->metadata_recover->parseMetadataLog(
