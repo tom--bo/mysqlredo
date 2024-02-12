@@ -24,7 +24,6 @@
 #include "innodb_log.h"
 #include "mylog0recv.h"
 #include "dict0dict.h"
-#include "mysqlredo.h"
 
 static char *filepath = nullptr;
 uint opt_verbose_output = 0;
@@ -38,11 +37,12 @@ static void get_options(int *argc, char ***argv);
 static const char *load_default_groups[] = {"mysqlredo", "client", nullptr};
 
 static struct my_option my_long_options[] = {
+        {"file-path", 'f', "[Required] Filepath of redo log file.", &filepath, nullptr, nullptr, GET_STR, REQUIRED_ARG, 0, 0, 0, nullptr, 0, nullptr},
         {"header", 'h', "Display redo log file's header info.", &opt_header_only, nullptr, nullptr, GET_NO_ARG, NO_ARG, 0, 0, 0, nullptr, 0, nullptr},
         {"header-only", 'H', "Display redo log file's header info only.", &opt_with_header, nullptr, nullptr, GET_NO_ARG, NO_ARG, 0, 0, 0, nullptr, 0, nullptr},
         {"help", '?', "Display this help and exit.", nullptr, nullptr, nullptr, GET_NO_ARG, NO_ARG, 0, 0, 0, nullptr, 0, nullptr},
-        {"start-lsn", 'b', "Set start lsn to print", &opt_start_lsn, &opt_start_lsn, nullptr, GET_ULONG, OPT_ARG, 0, 0, ULONG_MAX, nullptr, 0, nullptr},
-        {"stop-lsn", 'e', "Set stop lsn to print", &opt_stop_lsn, &opt_stop_lsn, nullptr, GET_ULL, OPT_ARG, LONG_LONG_MAX, 0, ULONG_MAX, nullptr, 0, nullptr},
+        {"start-lsn", 'b', "Set start lsn to print", &opt_start_lsn, nullptr, nullptr, GET_ULL, REQUIRED_ARG, 0, 0, ULONG_MAX, nullptr, 0, nullptr},
+        {"stop-lsn", 'e', "Set stop lsn to print", &opt_stop_lsn, nullptr, nullptr, GET_ULL, REQUIRED_ARG, LONG_LONG_MAX, 0, ULONG_MAX, nullptr, 0, nullptr},
         {"verbose", 'v', "More verbose output; (you can use this multiple times to get even more verbose output.)",
                 nullptr, nullptr, nullptr, GET_NO_ARG, NO_ARG, 0, 0, 0, nullptr, 0, nullptr},
         {"version", 'V', "Output version information and exit.", nullptr, nullptr, nullptr, GET_NO_ARG, NO_ARG, 0, 0, 0, nullptr, 0, nullptr},
@@ -65,12 +65,6 @@ extern "C" {
 static bool get_one_option(int optid, const struct my_option *opt,
                            char *argument) {
     switch (optid) {
-        case 'b':
-            opt_start_lsn = *(unsigned long long*)(opt->value);
-            break;
-        case 'e':
-            opt_stop_lsn = *(unsigned long long*)(opt->value);
-            break;
         case 'h':
             opt_with_header = true;
             break;
@@ -115,27 +109,17 @@ int main(int argc, char **argv) {
 
     get_options(&argc, &argv);
 
+    if(filepath == nullptr) {
+        std::cerr << "[ERROR] filepath needed with -f option" << std::endl;
+        usage();
+        exit(1);
+    }
+
     /* Need to call ut_crc32 functions in  log_file_header_deserialize() */
     ut_crc32_init();
 
-    if (argc > 1) {
-        fprintf(stderr, "%s: Too many arguments\n", my_progname);
-        exit(1);
-    } else if (argc != 1) {
-        fprintf(stderr, "%s: redo-log file path is not specified\n", my_progname);
-        exit(1);
-    }
-
-    filepath = argv[0];
-    if(opt_verbose_output > 1) {
-        std::cout << "filepath: " << filepath << std::endl;
-    }
-
     innodb_log *iblog = new(innodb_log);
     int ret = iblog->read_file(filepath);
-    if(opt_stop_lsn == 0) { /* Need to set default manually because this value is limited to longlong */
-        opt_stop_lsn = ULONG_MAX;
-    }
     if(ret) {
         std::cerr <<  "Error: Failed to read redolog file." << std::endl;
     }
@@ -240,7 +224,9 @@ int main(int argc, char **argv) {
         std::cerr << "Parse finished in the middle of file."<< std::endl;
     }
     std::cout << "Parse END" << std::endl;
-    std::cout << "scanned_lsn: " << recv_sys->scanned_lsn << ", recovered_lsn: " << recv_sys->recovered_lsn << std::endl;
+    if(opt_verbose_output) {
+        std::cout << "scanned_lsn: " << recv_sys->scanned_lsn << ", recovered_lsn: " << recv_sys->recovered_lsn << std::endl;
+    }
     std::cout << std::flush;
 
     return 0;
