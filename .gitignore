@@ -31,3 +31,4 @@ scalability_jobs_*
 .idea
 bld*
 cmake*
+.DS_Store

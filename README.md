@@ -3,7 +3,7 @@
 This is a prototype of `mysqlredo` command.  
 `mysqlredo` parse innodb redo log and dump redo log records.
 
-Currently, this tool modify and utilize innodb original recv_scan_log_recs().  
+Currently, this tool modify and utilize innodb original my_recv_scan_log_recs().  
 `mysqlredo` is a tool to survey or learn innodb redo log.  
 I tested only MySQL 8.0.32.
 
@@ -25,8 +25,11 @@ make mysqlredo
 
 ## How to run
 
-`mysqlredo --start-lsn=NNN --stop-lsn=MMM /path/to/#ib_redoN`
+```shell
+$ mysqlredo --start-lsn=NNN --stop-lsn=MMM --file-path=/path/to/#ib_redoN
+```
 
+`--file-path`(or `-f`) option is required. 
 
 ## sample
 
@@ -77,7 +80,7 @@ Let's read the redo log by `mysqlredo` command!
 You need to specify the redolog file and start/stop lsn of it.
 
 ```shell
-$ mysqlredo  --start-lsn=19607762 --stop-lsn=19607874 /mysql_remote/redo/#innodb_redo/#ib_redo18 -v --header
+$ mysqlredo  --start-lsn=19607762 --stop-lsn=19607874 --file-path=/mysql_remote/redo/#innodb_redo/#ib_redo18 -v --header
 -- Header block
 filesize: 1048576
 m_format: 6
