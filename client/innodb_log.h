@@ -1,13 +1,10 @@
 #ifndef MYSQL_INNODB_LOG_H
 #define MYSQL_INNODB_LOG_H
 
-
 /* Note that inside MySQL 'byte' is defined as char on Linux! */
 #include <string>
 #include "log0types.h"
 #include "log0files_io.h"
-
-extern uint opt_verbose_output;
 
 class innodb_log {
 public:

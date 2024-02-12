@@ -9,8 +9,7 @@
 #include "ibuf0ibuf.h"
 #include "log0test.h"
 #include "log0types.h"
-#include "mylog0recv.h"
-#include "innodb_log.h"
+#include "mysqlredo.h"
 
 // ====================== copied from log0recv.cc
 
@@ -1944,7 +1943,7 @@ automatically when the hash table becomes full.
 @param[out]  read_upto_lsn  scanning succeeded up to this lsn
 @param[out]  err             DB_SUCCESS when no dblwr corruptions.
 @return true if not able to scan any more in this log */
-static bool recv_scan_log_recs(const byte *buf, size_t len,
+static bool my_recv_scan_log_recs(const byte *buf, size_t len,
                                lsn_t start_lsn) {
   const byte *log_block = buf;
   lsn_t scanned_lsn = start_lsn;
@@ -2101,5 +2100,5 @@ bool my_parse_begin(byte *buf, const lsn_t checkpoint_lsn, lsn_t end_lsn, uint64
   lsn_t start_lsn =
       ut_uint64_align_down(checkpoint_lsn, OS_FILE_LOG_BLOCK_SIZE);
 
-  return recv_scan_log_recs(buf+first_block_offset, end_lsn - start_lsn, start_lsn);
+  return my_recv_scan_log_recs(buf+first_block_offset, end_lsn - start_lsn, start_lsn);
 }
