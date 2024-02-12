@@ -3,18 +3,7 @@
 
 #include "innodb_log.h"
 #include "log0files_io.h"
-#include "mylog0recv.h"
-#include "mtr0log.h"
-#include "page0zip.h"
-#include "trx0rec.h"
-#include "trx0undo.h"
-#include "btr0btr.h"
 #include "btr0cur.h"
-#include "ibuf0ibuf.h"
-#include "log0test.h"
-#include "./mylog0recv.h"
-
-uint opt_verbose_output = 0;
 
 // read file containts to innodb_log.buf
 int innodb_log::read_file(std::string filepath) {

@@ -24,26 +24,27 @@
 #include "innodb_log.h"
 #include "mylog0recv.h"
 #include "dict0dict.h"
-#include "mylog0log.h"
+#include "mysqlredo.h"
 
 static char *filepath = nullptr;
-bool opt_with_header = false, opt_header_only = false;
-ulong opt_stop_lsn = 0, opt_start_lsn = 0;
+uint opt_verbose_output = 0;
+bool opt_with_header = false;
+bool opt_header_only = false;
+unsigned long opt_start_lsn = 0;
+unsigned long opt_stop_lsn = 0;
 
 static void get_options(int *argc, char ***argv);
 
 static const char *load_default_groups[] = {"mysqlredo", "client", nullptr};
 
 static struct my_option my_long_options[] = {
+        {"header", 'h', "Display redo log file's header info.", &opt_header_only, nullptr, nullptr, GET_NO_ARG, NO_ARG, 0, 0, 0, nullptr, 0, nullptr},
+        {"header-only", 'H', "Display redo log file's header info only.", &opt_with_header, nullptr, nullptr, GET_NO_ARG, NO_ARG, 0, 0, 0, nullptr, 0, nullptr},
         {"help", '?', "Display this help and exit.", nullptr, nullptr, nullptr, GET_NO_ARG, NO_ARG, 0, 0, 0, nullptr, 0, nullptr},
-        {"header", 'h', "Display redo log file's header info.", nullptr, nullptr, nullptr, GET_NO_ARG, NO_ARG, 0, 0, 0, nullptr, 0, nullptr},
-        {"header-only", 'H', "Display redo log file's header info only.", nullptr, nullptr, nullptr, GET_NO_ARG, NO_ARG, 0, 0, 0, nullptr, 0, nullptr},
+        {"start-lsn", 'b', "Set start lsn to print", &opt_start_lsn, &opt_start_lsn, nullptr, GET_ULONG, OPT_ARG, 0, 0, ULONG_MAX, nullptr, 0, nullptr},
+        {"stop-lsn", 'e', "Set stop lsn to print", &opt_stop_lsn, &opt_stop_lsn, nullptr, GET_ULL, OPT_ARG, LONG_LONG_MAX, 0, ULONG_MAX, nullptr, 0, nullptr},
         {"verbose", 'v', "More verbose output; (you can use this multiple times to get even more verbose output.)",
-         nullptr, nullptr, nullptr, GET_NO_ARG, NO_ARG, 0, 0, 0, nullptr, 0, nullptr},
-        {"start-lsn", 'b', "Set start lsn to print",
-         &opt_start_lsn, &opt_start_lsn, nullptr, GET_ULONG, OPT_ARG, 0, 0, ULONG_MAX, nullptr, 0, nullptr},
-        {"stop-lsn", 'e', "Set stop lsn to print",
-         &opt_stop_lsn, &opt_stop_lsn, nullptr, GET_ULONG, OPT_ARG, 0 /* Need to set default manually because this value is limited to longlong */, 0, ULONG_MAX, nullptr, 0, nullptr},
+                nullptr, nullptr, nullptr, GET_NO_ARG, NO_ARG, 0, 0, 0, nullptr, 0, nullptr},
         {"version", 'V', "Output version information and exit.", nullptr, nullptr, nullptr, GET_NO_ARG, NO_ARG, 0, 0, 0, nullptr, 0, nullptr},
         {nullptr, 0, nullptr, nullptr, nullptr, nullptr, GET_NO_ARG, NO_ARG, 0, 0, 0, nullptr, 0, nullptr}
 };
@@ -64,6 +65,12 @@ extern "C" {
 static bool get_one_option(int optid, const struct my_option *opt,
                            char *argument) {
     switch (optid) {
+        case 'b':
+            opt_start_lsn = *(unsigned long long*)(opt->value);
+            break;
+        case 'e':
+            opt_stop_lsn = *(unsigned long long*)(opt->value);
+            break;
         case 'h':
             opt_with_header = true;
             break;
@@ -94,6 +101,7 @@ static void get_options(int *argc, char ***argv) {
 
 int main(int argc, char **argv) {
     MY_INIT(argv[0]);
+    opt_verbose_output = 0;
 
     my_getopt_use_args_separator = true;
     MEM_ROOT alloc{PSI_NOT_INSTRUMENTED, 512};

@@ -2242,7 +2242,8 @@ IF(NOT WITHOUT_SERVER AND WITH_UNIT_TESTS)
             client/mylog0recv.h
             client/mylog0log.h
             client/mymtr0log.cpp
-            client/mymtr0log.h)
+            client/mymtr0log.h
+            client/mysqlredo.h)
     ADD_CUSTOM_COMMAND(
       OUTPUT  ${DUMMY_SOURCE_FILE}
       COMMAND ${CMAKE_COMMAND} -E touch ${DUMMY_SOURCE_FILE}
