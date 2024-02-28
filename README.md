@@ -1,7 +1,8 @@
 # mysqlredo
 
-This is a prototype of `mysqlredo` command.  
 `mysqlredo` parse innodb redo log and dump redo log records.
+This is an experimental program to help me understand innodb redo logs.
+I do not intend to make this a production ready implementation.
 
 Currently, this tool modify and utilize innodb original my_recv_scan_log_recs().  
 `mysqlredo` is a tool to survey or learn innodb redo log.  
