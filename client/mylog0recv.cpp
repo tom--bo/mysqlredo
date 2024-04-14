@@ -85,28 +85,28 @@ static byte *recv_parse_or_apply_log_rec_body(
       std::cout << "  type: MLOG_FILE_DELETE, space: " << space_id << ", page_no: " << page_no;
       return fil_tablespace_redo_delete(
           ptr, end_ptr, page_id_t(space_id, page_no), parsed_bytes,
-          recv_sys->bytes_to_ignore_before_checkpoint != 0);
+          true);
 
     case MLOG_FILE_CREATE:
       std::cout << "  type: MLOG_FILE_CREATE, space: " << space_id << ", page_no: " << page_no;
 
       return fil_tablespace_redo_create(
           ptr, end_ptr, page_id_t(space_id, page_no), parsed_bytes,
-          recv_sys->bytes_to_ignore_before_checkpoint != 0);
+          true);
 
     case MLOG_FILE_RENAME:
       std::cout << "  type: MLOG_FILE_RENAME, space: " << space_id << ", page_no: " << page_no;
 
       return fil_tablespace_redo_rename(
           ptr, end_ptr, page_id_t(space_id, page_no), parsed_bytes,
-          recv_sys->bytes_to_ignore_before_checkpoint != 0);
+          true);
 
     case MLOG_FILE_EXTEND:
       std::cout << "  type: MLOG_FILE_EXTEND, space: " << space_id << ", page_no: " << page_no;
 
       return fil_tablespace_redo_extend(
           ptr, end_ptr, page_id_t(space_id, page_no), parsed_bytes,
-          recv_sys->bytes_to_ignore_before_checkpoint != 0);
+          true);
 #else  /* !UNIV_HOTBACKUP */
       // Mysqlbackup does not execute file operations. It cares for all
       // files to be at their final places when it applies the redo log.
