@@ -823,19 +823,21 @@ static byte *recv_parse_or_apply_log_rec_body(
 
     case MLOG_REC_INSERT_8027:
         std::cout << "  type: MLOG_REC_INSERT_8027, space: " << space_id << ", page_no: " << page_no;
+        [[fallthrough]];
+
     case MLOG_COMP_REC_INSERT_8027:
         std::cout << "  type: MLOG_COMP_REC_INSERT_8027, space: " << space_id << ", page_no: " << page_no;
 
-      ut_ad(!page || fil_page_type_is_index(page_type));
+        ut_ad(!page || fil_page_type_is_index(page_type));
 
-      if (nullptr !=
-          (ptr = mlog_parse_index_8027(
-               ptr, end_ptr, type == MLOG_COMP_REC_INSERT_8027, &index))) {
-        ut_a(!page || page_is_comp(page) == dict_table_is_comp(index->table));
+        if (nullptr !=
+            (ptr = mlog_parse_index_8027(
+                 ptr, end_ptr, type == MLOG_COMP_REC_INSERT_8027, &index))) {
+          ut_a(!page || page_is_comp(page) == dict_table_is_comp(index->table));
 
-        ptr = page_cur_parse_insert_rec(false, ptr, end_ptr, block, index, mtr);
-      }
-      break;
+          ptr = page_cur_parse_insert_rec(false, ptr, end_ptr, block, index, mtr);
+        }
+        break;
 
     case MLOG_REC_CLUST_DELETE_MARK:
       std::cout << "  type: MLOG_REC_CLUST_DELETE_MARK, space: " << space_id << ", page_no: " << page_no;
@@ -853,6 +855,7 @@ static byte *recv_parse_or_apply_log_rec_body(
 
     case MLOG_REC_CLUST_DELETE_MARK_8027:
         std::cout << "  type: MLOG_REC_CLUST_DELETE_MARK_8027, space: " << space_id << ", page_no: " << page_no;
+        [[fallthrough]];
     case MLOG_COMP_REC_CLUST_DELETE_MARK_8027:
         std::cout << "  type: MLOG_COMP_REC_CLUST_DELETE_MARK_8027, space: " << space_id << ", page_no: " << page_no;
 
@@ -913,22 +916,23 @@ static byte *recv_parse_or_apply_log_rec_body(
 
     case MLOG_REC_UPDATE_IN_PLACE_8027:
         std::cout << "  type: MLOG_REC_UPDATE_IN_PLACE_8027, space: " << space_id << ", page_no: " << page_no;
+        [[fallthrough]];
     case MLOG_COMP_REC_UPDATE_IN_PLACE_8027:
         std::cout << "  type: MLOG_COMP_REC_UPDATE_IN_PLACE_8027, space: " << space_id << ", page_no: " << page_no;
 
-      ut_ad(!page || fil_page_type_is_index(page_type));
+        ut_ad(!page || fil_page_type_is_index(page_type));
 
-      if (nullptr !=
-          (ptr = mlog_parse_index_8027(
-               ptr, end_ptr, type == MLOG_COMP_REC_UPDATE_IN_PLACE_8027,
-               &index))) {
-        ut_a(!page || page_is_comp(page) == dict_table_is_comp(index->table));
+        if (nullptr !=
+            (ptr = mlog_parse_index_8027(
+                 ptr, end_ptr, type == MLOG_COMP_REC_UPDATE_IN_PLACE_8027,
+                 &index))) {
+          ut_a(!page || page_is_comp(page) == dict_table_is_comp(index->table));
 
-        ptr =
-            btr_cur_parse_update_in_place(ptr, end_ptr, page, page_zip, index);
-      }
+          ptr =
+              btr_cur_parse_update_in_place(ptr, end_ptr, page, page_zip, index);
+        }
 
-      break;
+        break;
 
     case MLOG_LIST_END_DELETE:
       std::cout << "  type: MLOG_LIST_END_DELETE, space: " << space_id << ", page_no: " << page_no;
@@ -1190,6 +1194,7 @@ static byte *recv_parse_or_apply_log_rec_body(
 
     case MLOG_REC_DELETE_8027:
         std::cout << "  type: MLOG_REC_DELETE_8027, space: " << space_id << ", page_no: " << page_no;
+        [[fallthrough]];
     case MLOG_COMP_REC_DELETE_8027:
         std::cout << "  type: MLOG_COMP_REC_DELETE_8027, space: " << space_id << ", page_no: " << page_no;
 
@@ -1332,9 +1337,9 @@ static byte *recv_parse_or_apply_log_rec_body(
         case. */
         Log_test::Key key;
         Log_test::Value value;
-        lsn_t start_lsn, end_lsn;
+        lsn_t _start_lsn, end_lsn;
 
-        ptr = Log_test::parse_mlog_rec(ptr, end_ptr, key, value, start_lsn,
+        ptr = Log_test::parse_mlog_rec(ptr, end_ptr, key, value, _start_lsn,
                                        end_lsn);
       }
       break;
