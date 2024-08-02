@@ -21,7 +21,7 @@ public:
 
 class NullStream : public std::streambuf {
 public:
-  int overflow(int c) {
+  int overflow(int c) override final {
     return c;
   }
 };
