@@ -10549,7 +10549,7 @@ byte *fil_tablespace_redo_delete(byte *ptr, const byte *end,
     return nullptr;
   }
 
-  std::string fname(fname, len);
+  std::string fname(name, len);
   std::cout << ", len: " << (uint)len << ", file_name: " << fname;
 
   if (parse_only) {
