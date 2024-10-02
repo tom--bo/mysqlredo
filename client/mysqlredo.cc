@@ -96,10 +96,24 @@ static void get_options(int *argc, char ***argv) {
 int main(int argc, char **argv) {
     MY_INIT(argv[0]);
     opt_verbose_output = 0;
-
     my_getopt_use_args_separator = true;
     MEM_ROOT alloc{PSI_NOT_INSTRUMENTED, 512};
-    if (load_defaults("my", load_default_groups, &argc, &argv, &alloc)) exit(1);
+    char **new_argv = argv;
+    char *args[argc + 1];
+
+    // add --no-deafults if not specified
+    if(strcmp(argv[1], "--no-defaults")) {
+        args[0] = argv[0];
+        args[1] = new char[14];
+        std::strcpy(args[1], "--no-defaults");
+        for(int i = 1; i < argc; i++) {
+            args[i+1] = argv[i];
+        }
+        argc += 1;
+        new_argv = args;
+    }
+
+    if (load_defaults("my", load_default_groups, &argc, &new_argv, &alloc)) exit(1);
     my_getopt_use_args_separator = false;
 
     Log_checkpoint_header chpt_header;
@@ -107,7 +121,7 @@ int main(int argc, char **argv) {
     lsn_t max_chpt_lsn = 0, start_chpt_lsn = 0;
     uint64_t start_chpt_offset, first_block_offset;
 
-    get_options(&argc, &argv);
+    get_options(&argc, &new_argv);
 
     if(filepath == nullptr) {
         std::cerr << "[ERROR] filepath needed with -f option" << std::endl;
