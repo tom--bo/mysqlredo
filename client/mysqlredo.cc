@@ -34,7 +34,7 @@ unsigned long opt_stop_lsn = 0;
 
 static void get_options(int *argc, char ***argv);
 
-static const char *load_default_groups[] = {"mysqlredo", "client", nullptr};
+static const char *load_default_groups[] = {"mysqlredo", nullptr};
 
 static struct my_option my_long_options[] = {
         {"file-path", 'f', "[Required] Filepath of redo log file.", &filepath, nullptr, nullptr, GET_STR, REQUIRED_ARG, 0, 0, 0, nullptr, 0, nullptr},
